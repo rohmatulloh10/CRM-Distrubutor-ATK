@@ -26,7 +26,7 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware('auth', PreventBackHistory::class)->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/grafik/{tahun}', [DashboardController::class, 'grafikSemua'])->name('grafik');
-    Route::get('/matrix/pie', [DashboardController::class, 'pieMatrix'])->name('matrix.pie');
+    Route::get('/matrix/pie/{tahun}/{bulan}', [DashboardController::class, 'pieMatrix'])->name('matrix.pie');
 
 
     Route::middleware(AdminMiddleware::class)->group(function () {

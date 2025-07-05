@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Models\Models\MnLead;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -97,33 +99,32 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function pieMatrix(Request $r)
+    public function pieMatrix($tahun, $bulan)
     {
-        $bulan = $r->bulan;   
-        $tahun = $r->tahun; 
-
-        $already = DB::table('sales_matrix')
-            ->where('bulan', $bulan)->where('tahun', $tahun)
+        $exists = DB::table('sales_matrix')
+            ->where('tahun', $tahun)
+            ->where('bulan', $bulan)
             ->exists();
 
-        if (!$already) {
+        if (!$exists) {
             $sales = DB::table('users')->where('role', 'sales')->get();
+
             foreach ($sales as $s) {
                 $totalToko = DB::table('stores')
                     ->where('created_by', $s->id)
-                    ->whereMonth('created_at', $bulan)
                     ->whereYear('created_at', $tahun)
+                    ->whereMonth('created_at', $bulan)
                     ->count();
 
                 DB::table('sales_matrix')->updateOrInsert(
-                    ['user_id' => $s->id, 'bulan' => $bulan, 'tahun' => $tahun],
+                    ['user_id' => $s->id, 'tahun' => $tahun, 'bulan' => $bulan],
                     [
-                        'jumlah_toko' => $totalToko,
-                        'jumlah_prospek' => 0,
-                        'jumlah_aktivitas' => 0,
-                        'jumlah_closing' => 0,
-                        'updated_at' => now(),
-                        'created_at' => now()
+                        'jumlah_toko'       => $totalToko,
+                        'jumlah_prospek'    => 0,
+                        'jumlah_aktivitas'  => 0,
+                        'jumlah_closing'    => 0,
+                        'updated_at'        => now(),
+                        'created_at'        => now(),
                     ]
                 );
             }
@@ -131,7 +132,8 @@ class DashboardController extends Controller
 
         $rows = DB::table('sales_matrix')
             ->join('users', 'users.id', '=', 'sales_matrix.user_id')
-            ->where('bulan', $bulan)->where('tahun', $tahun)
+            ->where('tahun', $tahun)
+            ->where('bulan', $bulan)
             ->select('users.name AS label', 'sales_matrix.jumlah_toko AS value')
             ->get();
 

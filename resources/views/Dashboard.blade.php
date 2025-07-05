@@ -274,40 +274,31 @@
             });
         });
 
-        let pieMatrix = null;
+let pieMatrix = null;
+function loadPie() {
+    const tahun = $('#filterTahun').val(); 
+    const bulan = $('#filterBulan').val();  
 
-        function loadPie() {
-            const bulan = $('#filterBulan').val();
-            const tahun = $('#filterTahun').val();
+    $.get(`${BASE_URL}/matrix/pie/${tahun}/${bulan}`, function (rows) {
+        const labels = rows.map(r => r.label);
+        const data   = rows.map(r => r.value);
+        const colors = labels.map(
+            () => `rgba(${~~(Math.random()*255)},${~~(Math.random()*255)},${~~(Math.random()*255)},0.8)`
+        );
 
-            $.get('{{ route('matrix.pie') }}', {
-                bulan,
-                tahun
-            }, rows => {
-                const labels = rows.map(r => r.label);
-                const data = rows.map(r => r.value);
-                const colors = labels.map(() =>
-                    `rgba(${~~(Math.random()*255)},${~~(Math.random()*255)},${~~(Math.random()*255)},0.8)`);
+        if (pieMatrix) pieMatrix.destroy();
+        pieMatrix = new Chart(document.getElementById('salesMatrixPie'), {
+            type:'pie',
+            data:{ labels, datasets:[{ data, backgroundColor: colors }] },
+            options:{ responsive:true, legend:{ position:'right' } }
+        });
+    });
+}
 
-                if (pieMatrix) pieMatrix.destroy();
-                pieMatrix = new Chart(document.getElementById('salesMatrixPie'), {
-                    type: 'pie',
-                    data: {
-                        labels,
-                        datasets: [{
-                            data,
-                            backgroundColor: colors
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        legend: {
-                            position: 'right'
-                        }
-                    }
-                });
-            });
-        }
+$(function () {
+    loadPie();
+    $('#filterTahun, #filterBulan').on('change', loadPie);
+});
 
         $(function() {
             loadPie();
